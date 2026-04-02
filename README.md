@@ -1,4 +1,4 @@
-# ⚕️pskillRx
+# ⚕️pskillRx ⚕️
 
 A structured, ever-expanding library of **AI Agent prompts**, **skills**, **system instructions**, and **configuration templates** optimised for use with Google Gemini (and compatible large language models).
 
