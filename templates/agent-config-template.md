@@ -27,7 +27,7 @@
 
 | Parameter | Value |
 |---|---|
-| **Model** | {{MODEL_ID}} (e.g. `gemini-2.0-flash`, `gemini-2.5-pro`) |
+| **Model** | {{MODEL_ID}} (e.g. `gemini-3-flash-preview`, `gemini-3.1-pro-preview`) |
 | **Temperature** | {{TEMPERATURE}} (0.0 – 2.0; lower = more deterministic) |
 | **Top-P** | {{TOP_P}} (0.0 – 1.0) |
 | **Top-K** | {{TOP_K}} |
