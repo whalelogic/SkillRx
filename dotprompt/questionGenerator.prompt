@@ -1,0 +1,31 @@
+---
+model: google-genai/gemini-3.0-pro
+input:
+  schema:
+    topic: string
+    difficulty: string
+    questionType: string
+    count: number
+output:
+  format: json
+  schema:
+    questions: array
+---
+
+Generate {{count}} {{difficulty}} level {{questionType}} questions about {{topic}}.
+
+Question types can include:
+- multiple-choice
+- true-false
+- short-answer
+- coding-challenge
+- scenario-based
+
+For each question, provide:
+1. The question text
+2. Correct answer(s)
+3. Explanation
+4. Learning objective addressed
+5. Difficulty justification
+
+Ensure questions are clear, relevant, and appropriately challenging for the specified difficulty level.

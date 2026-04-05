@@ -1,0 +1,29 @@
+---
+model: google-genai/gemini-3.0-pro
+input:
+  schema:
+    code: string
+    language: string
+output:
+  format: json
+  schema:
+    issues: array
+    suggestions: array
+    rating: number
+---
+
+You are an expert code reviewer. Review the following {{language}} code and provide feedback.
+
+Code:
+```{{language}}
+{{code}}
+```
+
+Analyze the code for:
+- Code quality and best practices
+- Potential bugs or issues
+- Performance improvements
+- Security concerns
+- Maintainability
+
+Provide your review as a structured response with issues, suggestions, and an overall rating (1-10).

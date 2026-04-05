@@ -1,0 +1,31 @@
+---
+model: google-genai/gemini-3.0-pro
+input:
+  schema:
+    skill: string
+    currentLevel: string
+    goalLevel: string
+    timeframe: string
+output:
+  format: json
+  schema:
+    path: array
+    milestones: array
+    resources: array
+    estimatedHours: number
+---
+
+Create a personalized learning path for mastering {{skill}}.
+
+Current Level: {{currentLevel}}
+Goal Level: {{goalLevel}}
+Timeframe: {{timeframe}}
+
+Generate a structured learning path that includes:
+1. Step-by-step progression milestones
+2. Recommended resources and materials
+3. Practice exercises and projects
+4. Estimated time commitment
+5. Key concepts to master at each stage
+
+Make it practical, achievable, and tailored to the user's timeline.

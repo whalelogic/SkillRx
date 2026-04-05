@@ -29,28 +29,37 @@ A structured, ever-expanding library of **AI Agent prompts**, **skills**, **syst
 3. **Browse `prompts/`** for ready-to-use user-turn messages.
 4. **Combine `skills/`** entries to extend an agent's capabilities beyond its base system instruction.
 
-### Gemini API Example
+### Gemini Go SDK Example
 
-```python
-import google.generativeai as genai
-
-# Load a system instruction
-with open("software-engineering/system-instructions/senior-software-engineer.md") as f:
-    system_instruction = f.read()
-
-model = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
-    system_instruction=system_instruction,
+```go
+import (
+    "context"
+    "fmt"
+    "os"
+    "google.golang.org/genai"
 )
 
-# Load a prompt template and fill it in
-with open("software-engineering/prompts/code-review.md") as f:
-    prompt_template = f.read()
+func main() {
+    ctx := context.Background()
+    client, _ := genai.NewClient(ctx, &genai.ClientConfig{
+        APIKey:  os.Getenv("GEMINI_API_KEY"),
+        Backend: genai.BackendGemini,
+    })
 
-response = model.generate_content(
-    prompt_template.replace("{{CODE}}", my_code_string)
-)
-print(response.text)
+    // Load system instructions and prompt
+    sysInst, _ := os.ReadFile("software-engineering/system-instructions/senior-software-engineer.md")
+    promptText, _ := os.ReadFile("software-engineering/prompts/code-review.md")
+
+    model := "gemini-3-flash"
+    config := &genai.GenerateContentConfig{
+        SystemInstruction: &genai.Content{
+            Parts: []*genai.Part{{Text: string(sysInst)}},
+        },
+    }
+
+    result, _ := client.Models.GenerateContent(ctx, model, genai.Text(string(promptText)), config)
+    fmt.Println(result.Candidates[0].Content.Parts[0].Text)
+}
 ```
 
 ### Google AI Studio
