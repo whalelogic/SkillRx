@@ -1,4 +1,4 @@
-# SEO Optimisation — Skill
+# SEO Optimization — Skill
 
 ## Metadata
 
