@@ -1,0 +1,25 @@
+<div id="label-chip" hx-swap-oob="true">
+  {{template "label-chip-inner" .}}
+</div>
+
+<div id="formulary" hx-swap-oob="true">
+  <div class="formulary-label">rxlib / categories</div>
+  {{template "formulary" .}}
+</div>
+
+<div id="source-panel-content" hx-swap-oob="true">
+  {{template "source-inner" .}}
+</div>
+
+<input type="hidden" id="input-category" name="category" value="{{.ActiveCategory}}" hx-swap-oob="true">
+<input type="hidden" id="input-skill" name="skill" value="{{.ActiveSkill}}" hx-swap-oob="true">
+
+<div id="chat-messages" hx-swap-oob="true">
+  <div class="msg assistant">
+    <div class="msg-avatar">℞</div>
+    <div class="msg-body">
+      <div class="msg-role">{{.ActiveSkill}}</div>
+      <div class="msg-content markdown">Loaded **{{.ActiveSkill}}** from `{{.ActiveCategory}}`. Send a prompt to test this skill's instructions.</div>
+    </div>
+  </div>
+</div>

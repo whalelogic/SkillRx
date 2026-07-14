@@ -2,6 +2,7 @@ package main
 
 import (
         "context"
+		"os"
         "fmt"
         "google.golang.org/genai"
         "log"
@@ -10,6 +11,19 @@ import (
 type Temp *float32
 
 func main() {
+
+		f, err := os.Open("/home/whaler/github/SkillRx/financial-markets/system-instructions/market_pulse.md")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		defer f.Close()
+
+		stringData := make([]byte, 1000)
+		_, err = f.Read(stringData)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		temperature := float32(0.7)
 		topP := float32(0.9)
@@ -21,7 +35,7 @@ func main() {
         }
 
         config := &genai.GenerateContentConfig{
-                SystemInstruction: genai.NewContentFromText("You are a cat. Your name is Philbert and you have 5 paws.", genai.RoleUser),
+                SystemInstruction: genai.NewContentFromText(string(stringData), genai.RoleUser),
                 Temperature:       &temperature,
 				TopP:             &topP,
 				TopK:             &topK,

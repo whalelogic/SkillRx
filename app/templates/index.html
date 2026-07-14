@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SkillRx</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+
+  {{/* ---------- SIDEBAR ---------- */}}
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="rx-mark">℞</div>
+      <div class="brand-text">
+        <span class="name">SkillRx</span>
+        <span class="sub">FORMULARY CONSOLE</span>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="skillSearch" placeholder="Search skills, categories…" onkeyup="filterFormulary(this.value)">
+      </div>
+    </div>
+
+    <div class="formulary" id="formulary">
+      <div class="formulary-label">rxlib / categories</div>
+      {{template "formulary" .}}
+    </div>
+
+    <div class="sidebar-foot">
+      <span><span class="status-dot"></span>local · :8080</span>
+      <span>rxlib v0.1</span>
+    </div>
+  </aside>
+
+  {{/* ---------- MAIN ---------- */}}
+  <main class="main">
+    <div class="topbar">
+      <div class="label-chip" id="label-chip">
+        {{template "label-chip-inner" .}}
+      </div>
+      <div class="topbar-right">
+        <div class="tabs">
+          <button type="button" class="tab-btn active" id="tabChat"
+            hx-on:click="document.getElementById('tabChat').classList.add('active');document.getElementById('tabSource').classList.remove('active');document.getElementById('chatScroll').classList.remove('hidden');document.getElementById('sourceScroll').classList.remove('active')">CHAT</button>
+          <button type="button" class="tab-btn" id="tabSource"
+            hx-on:click="document.getElementById('tabSource').classList.add('active');document.getElementById('tabChat').classList.remove('active');document.getElementById('chatScroll').classList.add('hidden');document.getElementById('sourceScroll').classList.add('active')">SOURCE</button>
+        </div>
+        <select class="model-select">
+          <option>sonnet</option>
+          <option>opus</option>
+          <option>haiku</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="chat-scroll" id="chatScroll">
+        <div class="chat-inner" id="chat-messages">
+          <div class="msg assistant">
+            <div class="msg-avatar">℞</div>
+            <div class="msg-body">
+              <div class="msg-role">{{.ActiveSkill}}</div>
+              <div class="msg-content markdown">Loaded **{{.ActiveSkill}}** from `{{.ActiveCategory}}`. Send a prompt to test this skill's instructions — responses render as markdown, same as the CLI.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="source-scroll" id="sourceScroll">
+        <div class="source-doc" id="source-panel-content">
+          {{template "source-inner" .}}
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-inner">
+        <form id="chat-form" class="composer-box" hx-post="/chat" hx-target="#chat-messages" hx-swap="beforeend"
+              hx-on::after-request="this.reset(); document.getElementById('composerInput').style.height='auto'">
+          <input type="hidden" id="input-category" name="category" value="{{.ActiveCategory}}">
+          <input type="hidden" id="input-skill" name="skill" value="{{.ActiveSkill}}">
+          <textarea id="composerInput" name="prompt" rows="1" placeholder="Test a prompt against the selected skill…"
+                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();htmx.trigger('#chat-form','submit')}"
+                    oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
+          <button type="submit" class="send-btn" id="typing-indicator">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E1210" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+          </button>
+        </form>
+        <div class="composer-foot">
+          <span>⏎ to send · ⇧⏎ for newline</span>
+          <span>htmx-driven · no page reloads</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  // Render any freshly-swapped markdown blocks (initial load + after htmx swaps).
+  function renderMarkdown(scope){
+    scope.querySelectorAll('.markdown:not([data-rendered])').forEach(function(el){
+      el.innerHTML = marked.parse(el.textContent.trim());
+      el.setAttribute('data-rendered', 'true');
+    });
+    var chat = document.getElementById('chatScroll');
+    if (chat) chat.scrollTop = chat.scrollHeight;
+  }
+  document.addEventListener('DOMContentLoaded', function(){ renderMarkdown(document); });
+  document.body.addEventListener('htmx:afterSettle', function(evt){ renderMarkdown(evt.target); });
+
+  // Sidebar client-side filter (categories/skills are already server-rendered;
+  // this just hides non-matching rows, no round trip needed for search-as-you-type).
+  function filterFormulary(q){
+    q = q.trim().toLowerCase();
+    document.querySelectorAll('#formulary .category').forEach(function(cat){
+      var catName = cat.dataset.cat.toLowerCase();
+      var anyMatch = false;
+      cat.querySelectorAll('.skill-item').forEach(function(item){
+        var match = !q || item.dataset.skill.toLowerCase().includes(q) || catName.includes(q);
+        item.style.display = match ? '' : 'none';
+        if(match) anyMatch = true;
+      });
+      cat.style.display = anyMatch ? '' : 'none';
+      if(q) cat.classList.add('open');
+    });
+  }
+</script>
+</body>
+</html>
+
+{{define "formulary"}}
+{{$activeCat := .ActiveCategory}}{{$activeSkill := .ActiveSkill}}
+{{range .Categories}}
+<div class="category {{if eq2 .Name $activeCat}}open{{end}}" data-cat="{{.Name}}">
+  <div class="cat-head" hx-on:click="this.parentElement.classList.toggle('open')">
+    <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    <span class="code">{{.Code}}</span>
+    <span class="cat-name">{{.Name}}</span>
+    <span class="cat-count">{{len .Skills}}</span>
+  </div>
+  <div class="skill-list">
+    {{$catName := .Name}}
+    {{range .Skills}}
+    <div class="skill-item {{if and (eq2 $catName $activeCat) (eq2 . $activeSkill)}}active{{end}}"
+         data-skill="{{.}}"
+         hx-get="/select/{{$catName}}/{{.}}"
+         hx-swap="none">
+      <span class="dot"></span><span>{{.}}</span>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+{{end}}
+
+{{define "label-chip-inner"}}
+<span class="rx-glyph">℞</span>
+<div class="divider"></div>
+<span class="cat" id="activeCat">{{.ActiveCategory}}</span>
+<span class="skill" id="activeSkill">{{.ActiveSkill}}</span>
+{{end}}
+
+{{define "source-inner"}}
+<div class="source-doc-head">
+  <span class="path" id="sourcePath">{{.SourcePath}}</span>
+  <span class="tag">read-only</span>
+</div>
+<pre id="sourceContent">{{.SourceContent}}</pre>
+{{end}}
