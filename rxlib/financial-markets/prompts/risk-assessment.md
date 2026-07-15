@@ -10,8 +10,6 @@
 | **Recommended System Instruction** | `financial-markets/system-instructions/quantitative-analyst.md` |
 | **Output Format** | Structured Markdown with tables |
 
-> **Disclaimer:** Educational analysis only. Not investment advice.
-
 ---
 
 ## Prompt
@@ -46,5 +44,3 @@ Include:
 5. **Tail risk** — what is the maximum realistic loss (consider historical drawdowns and stress scenarios)?
 6. **Risk/reward summary** — present as a simple table: Scenario | Probability (rough) | P&L Impact.
 7. **Risk management suggestions** — position sizing guidance, stop-loss levels, hedging options.
-
-*This is educational analysis only, not investment advice. Consult a qualified financial professional.*

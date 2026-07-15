@@ -10,8 +10,6 @@
 | **Recommended System Instruction** | `financial-markets/system-instructions/financial-researcher.md` |
 | **Output Format** | Investment memo (Markdown) |
 
-> **Disclaimer:** Educational analysis only. Not investment advice.
-
 ---
 
 ## Prompt
@@ -59,5 +57,3 @@ Structure as a research note:
 - Bear Case / Key Risks
 - Catalysts
 - Conclusion
-
-End with: *"This is educational analysis only, not investment advice."*

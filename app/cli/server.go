@@ -44,7 +44,7 @@ func main() {
         result, _ := client.Models.GenerateContent(
                 ctx,
                 "gemini-3-flash-preview",
-                genai.Text("Hello, cat. What's your favorite programming language?"),
+                genai.Text("Give me the daily market pulse for the SP500 and Semi-Conductor index. Include the top gainers and losers for the day, and any relevant news or events that may have impacted the market. Provide a brief summary of the overall market sentiment and any notable trends or patterns observed in the SP500 and Semiconductor index. Provide a watchlist inside a table. "),
                 config,
         )
 

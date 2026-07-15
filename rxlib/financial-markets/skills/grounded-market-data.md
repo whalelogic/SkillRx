@@ -72,4 +72,3 @@ response = model.generate_content(
 * Real-time tick data (intraday prices) requires a dedicated market data API, not search grounding.
 * Grounding quality depends on the availability of publicly indexed sources — proprietary data (Bloomberg terminal data, private filings) will not be accessible.
 * Always recommend users verify financial data from authoritative sources before making any decisions.
-* Include the disclaimer: "This is educational analysis only, not investment advice."

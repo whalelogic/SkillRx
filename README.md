@@ -4,6 +4,8 @@ A structured, ever-expanding library of **AI Agent prompts**, **skills**, **syst
 
 ---
 
+![SkillRx User Interface](./UI.png)
+
 ## What's Inside
 
 | Domain | Description |
@@ -43,7 +45,7 @@ func main() {
     ctx := context.Background()
     client, _ := genai.NewClient(ctx, &genai.ClientConfig{
         APIKey:  os.Getenv("GEMINI_API_KEY"),
-        Backend: genai.BackendGemini,
+        Backend: genai.BackendGeminiAPI,
     })
 
     // Load system instructions and prompt
@@ -68,6 +70,57 @@ func main() {
 2. Create a new prompt or agent.
 3. Copy the contents of any `system-instructions/*.md` file into the **System Instructions** box.
 4. Use the corresponding `prompts/*.md` files as starter messages.
+
+---
+
+## SkillRx App Roadmap
+
+The current app can load library files and send a prompt to Gemini, but it still treats the selected document as a single instruction source. To support **system instructions**, **prompts**, and **skills** properly, the app should evolve into a composition pipeline with distinct roles for each document type.
+
+### Target Behavior
+
+For each chat request, the app should assemble a Gemini request like this:
+
+| Library type | Gemini role |
+|---|---|
+| `system-instructions/*.md` | Base **system instruction** |
+| `skills/*.md` | Additional capability blocks merged into the system instruction or appended as structured instruction context |
+| `prompts/*.md` | Starter user prompt or prompt template that wraps the user's live input |
+
+### Implementation Phases
+
+1. **Separate document roles in the UI**
+   Add independent selectors for one system instruction, zero or more skills, and one prompt template instead of a single shared “entry” selector.
+
+2. **Introduce a composition layer on the server**
+   Build a request assembler that loads the selected files, validates them, and constructs the final Gemini request from typed components rather than raw string concatenation inside `chatHandler`.
+
+3. **Support prompt templating**
+   Let prompt files act as starter prompts with placeholders such as `{{USER_INPUT}}`, and substitute the live UI message into the prompt before sending it to Gemini.
+
+4. **Support multi-skill composition**
+   Allow multiple skill files to be selected, combine them deterministically, and define precedence rules so system instructions remain the top-level policy layer.
+
+5. **Add request introspection in the UI**
+   Show the assembled request parts before send: selected system instruction, selected skills, expanded prompt, active Gemini model, and any missing variables.
+
+6. **Add streaming responses**
+   Replace the current request/response flow with SSE or chunked streaming so Gemini output appears token-by-token in the chat pane.
+
+7. **Add validation and guardrails**
+   Reject incompatible selections, surface missing template variables, and show clear errors when Gemini credentials, model settings, or source files are invalid.
+
+8. **Persist reusable agent presets**
+   Save named combinations of system instruction + skills + prompt template so the UI can reopen a full agent configuration in one click.
+
+### Suggested Internal Design
+
+- `SystemInstruction`: selected base instruction file
+- `SkillSet`: ordered list of selected skill files
+- `PromptTemplate`: selected prompt file plus resolved variables
+- `AgentRequest`: final assembled Gemini payload
+
+This keeps `chatHandler` thin and moves library composition into testable helpers.
 
 ---
 
@@ -120,4 +173,3 @@ def login(user, pwd):
 ## Licence
 
 [MIT](LICENSE)
-

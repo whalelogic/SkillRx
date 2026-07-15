@@ -11,6 +11,8 @@ Prompts, system instructions, and skills for financial markets analysis with Gem
 | [`market-analyst.md`](system-instructions/market-analyst.md) | Broad market analyst covering equities, macro, and sector rotation |
 | [`quantitative-analyst.md`](system-instructions/quantitative-analyst.md) | Quant role focused on data-driven strategies, backtesting, and statistics |
 | [`financial-researcher.md`](system-instructions/financial-researcher.md) | Deep-dive fundamental researcher covering company financials and valuation |
+| [`fixed-income-advisor.md`](system-instructions/fixed-income-advisor.md) | Income-maximizing fixed-income specialist covering CEFs, bond funds, preferreds, credit, and high-yield entry-point analysis |
+| [`derivatives-advisor.md`](system-instructions/derivatives-advisor.md) | Options-focused derivatives specialist limited to liquid, high-open-interest underlyings and trade structures |
 
 ## Prompts
 

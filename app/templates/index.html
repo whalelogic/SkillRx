@@ -49,14 +49,14 @@
       <div class="topbar-right">
         <div class="tabs">
           <button type="button" class="tab-btn active" id="tabChat"
-            hx-on:click="document.getElementById('tabChat').classList.add('active');document.getElementById('tabSource').classList.remove('active');document.getElementById('chatScroll').classList.remove('hidden');document.getElementById('sourceScroll').classList.remove('active')">CHAT</button>
+            hx-on:click="document.getElementById('tabChat').classList.add('active');document.getElementById('tabSource').classList.remove('active');document.getElementById('chatScroll').classList.remove('hidden');document.getElementById('sourceScroll').classList.remove('active')"><span class="tab-icon" aria-hidden="true">✦</span>CHAT</button>
           <button type="button" class="tab-btn" id="tabSource"
-            hx-on:click="document.getElementById('tabSource').classList.add('active');document.getElementById('tabChat').classList.remove('active');document.getElementById('chatScroll').classList.add('hidden');document.getElementById('sourceScroll').classList.add('active')">SOURCE</button>
+            hx-on:click="document.getElementById('tabSource').classList.add('active');document.getElementById('tabChat').classList.remove('active');document.getElementById('chatScroll').classList.add('hidden');document.getElementById('sourceScroll').classList.add('active')"><span class="tab-icon" aria-hidden="true">⌘</span>SOURCE</button>
         </div>
-        <select class="model-select">
-          <option>sonnet</option>
-          <option>opus</option>
-          <option>haiku</option>
+        <select class="model-select" title="Active Gemini model" disabled>
+          <option {{if eq2 .ModelName "gemini-3-flash"}}selected{{end}}>gemini-3-flash</option>
+          <option {{if eq2 .ModelName "gemini-2.5-flash"}}selected{{end}}>gemini-2.5-flash</option>
+          <option {{if eq2 .ModelName "gemini-2.5-pro"}}selected{{end}}>gemini-2.5-pro</option>
         </select>
       </div>
     </div>
@@ -67,8 +67,8 @@
           <div class="msg assistant">
             <div class="msg-avatar">℞</div>
             <div class="msg-body">
-              <div class="msg-role">{{.ActiveSkill}}</div>
-              <div class="msg-content markdown">Loaded **{{.ActiveSkill}}** from `{{.ActiveCategory}}`. Send a prompt to test this skill's instructions — responses render as markdown, same as the CLI.</div>
+              <div class="msg-role">{{.ActiveLabel}}</div>
+              <div class="msg-content markdown">Loaded **{{.ActiveLabel}}** from `{{.SourcePath}}`. Send a prompt to test this library document's instructions — responses render as markdown, same as the CLI.</div>
             </div>
           </div>
         </div>
@@ -83,14 +83,19 @@
     <div class="composer">
       <div class="composer-inner">
         <form id="chat-form" class="composer-box" hx-post="/chat" hx-target="#chat-messages" hx-swap="beforeend"
-              hx-on::after-request="this.reset(); document.getElementById('composerInput').style.height='auto'">
+              data-default-target="#chat-messages" data-default-swap="beforeend">
           <input type="hidden" id="input-category" name="category" value="{{.ActiveCategory}}">
-          <input type="hidden" id="input-skill" name="skill" value="{{.ActiveSkill}}">
-          <textarea id="composerInput" name="prompt" rows="1" placeholder="Test a prompt against the selected skill…"
+          <input type="hidden" id="input-entry" name="entry" value="{{.ActiveEntry}}">
+          <textarea id="composerInput" name="prompt" rows="1" placeholder="Test a prompt against the selected library document…"
                     onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();htmx.trigger('#chat-form','submit')}"
                     oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
           <button type="submit" class="send-btn" id="typing-indicator">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0E1210" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            <span class="btn-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+            </span>
+            <span class="btn-spinner" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
           </button>
         </form>
         <div class="composer-foot">
@@ -114,6 +119,87 @@
   document.addEventListener('DOMContentLoaded', function(){ renderMarkdown(document); });
   document.body.addEventListener('htmx:afterSettle', function(evt){ renderMarkdown(evt.target); });
 
+  function appendUserMessage(prompt){
+    var chat = document.getElementById('chat-messages');
+    var msg = document.createElement('div');
+    msg.className = 'msg user';
+    msg.innerHTML = '<div class="msg-avatar">YOU</div><div class="msg-body"><div class="msg-role">you</div><div class="msg-content"></div></div>';
+    msg.querySelector('.msg-content').textContent = prompt;
+    chat.appendChild(msg);
+  }
+
+  function appendPendingMessage(requestId, role){
+    var chat = document.getElementById('chat-messages');
+    var msg = document.createElement('div');
+    msg.className = 'msg assistant pending';
+    msg.id = requestId;
+    msg.innerHTML = '<div class="msg-avatar">℞</div><div class="msg-body"><div class="msg-role"></div><div class="msg-content"><div class="msg-spinner"><span class="spinner-ring" aria-hidden="true"></span><span>Thinking…</span></div></div></div>';
+    msg.querySelector('.msg-role').textContent = role;
+    chat.appendChild(msg);
+  }
+
+  function replacePendingWithError(requestId, role, message){
+    var pending = document.getElementById(requestId);
+    if (!pending) return;
+    var msg = document.createElement('div');
+    msg.className = 'msg assistant';
+    msg.innerHTML = '<div class="msg-avatar">℞</div><div class="msg-body"><div class="msg-role"></div><div class="msg-content"></div></div>';
+    msg.querySelector('.msg-role').textContent = role;
+    msg.querySelector('.msg-content').textContent = message;
+    pending.replaceWith(msg);
+  }
+
+  function setComposerPending(form, pending){
+    var button = document.getElementById('typing-indicator');
+    form.dataset.requestInFlight = pending ? 'true' : 'false';
+    button.classList.toggle('is-loading', pending);
+    button.disabled = pending;
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var form = document.getElementById('chat-form');
+    var input = document.getElementById('composerInput');
+
+    form.addEventListener('submit', function(event){
+      var prompt = input.value.trim();
+      if (!prompt || form.dataset.requestInFlight === 'true') {
+        event.preventDefault();
+        return;
+      }
+
+      var requestId = 'pending-reply-' + Date.now();
+      var activeRole = document.getElementById('activeSkill').textContent.trim() || 'assistant';
+
+      form.dataset.pendingId = requestId;
+      form.setAttribute('hx-target', '#' + requestId);
+      form.setAttribute('hx-swap', 'outerHTML');
+
+      appendUserMessage(prompt);
+      appendPendingMessage(requestId, activeRole);
+      input.value = '';
+      input.style.height = 'auto';
+      setComposerPending(form, true);
+      renderMarkdown(document);
+    });
+  });
+
+  document.body.addEventListener('htmx:afterRequest', function(evt){
+    if (evt.target.id !== 'chat-form') return;
+    var form = evt.target;
+    form.setAttribute('hx-target', form.dataset.defaultTarget);
+    form.setAttribute('hx-swap', form.dataset.defaultSwap);
+    setComposerPending(form, false);
+    document.getElementById('composerInput').focus();
+  });
+
+  document.body.addEventListener('htmx:responseError', function(evt){
+    if (evt.target.id !== 'chat-form') return;
+    var form = evt.target;
+    var activeRole = document.getElementById('activeSkill').textContent.trim() || 'assistant';
+    var message = (evt.detail.xhr && evt.detail.xhr.responseText ? evt.detail.xhr.responseText : 'Request failed.').trim();
+    replacePendingWithError(form.dataset.pendingId, activeRole, message);
+  });
+
   // Sidebar client-side filter (categories/skills are already server-rendered;
   // this just hides non-matching rows, no round trip needed for search-as-you-type).
   function filterFormulary(q){
@@ -135,23 +221,23 @@
 </html>
 
 {{define "formulary"}}
-{{$activeCat := .ActiveCategory}}{{$activeSkill := .ActiveSkill}}
+{{$activeCat := .ActiveCategory}}{{$activeEntry := .ActiveEntry}}
 {{range .Categories}}
 <div class="category {{if eq2 .Name $activeCat}}open{{end}}" data-cat="{{.Name}}">
   <div class="cat-head" hx-on:click="this.parentElement.classList.toggle('open')">
     <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     <span class="code">{{.Code}}</span>
     <span class="cat-name">{{.Name}}</span>
-    <span class="cat-count">{{len .Skills}}</span>
+    <span class="cat-count">{{len .Entries}}</span>
   </div>
   <div class="skill-list">
     {{$catName := .Name}}
-    {{range .Skills}}
-    <div class="skill-item {{if and (eq2 $catName $activeCat) (eq2 . $activeSkill)}}active{{end}}"
-         data-skill="{{.}}"
-         hx-get="/select/{{$catName}}/{{.}}"
+    {{range .Entries}}
+    <div class="skill-item {{if and (eq2 $catName $activeCat) (eq2 .ID $activeEntry)}}active{{end}}"
+         data-skill="{{.Label}}"
+         hx-get="/select?category={{$catName | urlquery}}&entry={{.ID | urlquery}}"
          hx-swap="none">
-      <span class="dot"></span><span>{{.}}</span>
+      <span class="dot"></span><span>{{.Label}}</span>
     </div>
     {{end}}
   </div>
@@ -163,7 +249,7 @@
 <span class="rx-glyph">℞</span>
 <div class="divider"></div>
 <span class="cat" id="activeCat">{{.ActiveCategory}}</span>
-<span class="skill" id="activeSkill">{{.ActiveSkill}}</span>
+<span class="skill" id="activeSkill">{{.ActiveLabel}}</span>
 {{end}}
 
 {{define "source-inner"}}

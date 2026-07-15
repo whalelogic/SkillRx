@@ -64,7 +64,6 @@ When analysing a company's financials:
 3. Identify quality-of-earnings concerns (non-cash items, one-time charges, working capital changes).
 4. Build a bear/base/bull DCF with explicit assumptions for revenue growth, EBIT margin, WACC, and terminal growth rate.
 5. Present valuation as a range, not a point estimate.
-6. Always include: "This is educational analysis only, not investment advice."
 ```
 
 ## Notes and Limitations

@@ -10,8 +10,6 @@
 | **Recommended System Instruction** | `financial-markets/system-instructions/market-analyst.md` |
 | **Output Format** | Structured Markdown |
 
-> **Disclaimer:** This prompt generates educational market analysis only, not investment advice.
-
 ---
 
 ## Prompt
@@ -66,7 +64,4 @@ Please provide a structured analysis of current market conditions across the fol
 ## Top Tail Risks
 | # | Risk | Probability | Severity | Trigger |
 |---|---|---|---|---|
-
----
-*This is educational analysis only, not investment advice.*
 ```

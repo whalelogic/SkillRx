@@ -10,8 +10,6 @@
 | **Recommended System Instruction** | `financial-markets/system-instructions/financial-researcher.md` |
 | **Output Format** | Structured Markdown |
 
-> **Disclaimer:** Educational analysis only. Not investment advice.
-
 ---
 
 ## Prompt
@@ -44,5 +42,3 @@ Please summarise and interpret the following earnings report for **{{COMPANY_NAM
 5. **Key risks raised** — any new risk factors or deterioration in existing risks mentioned?
 6. **Market reaction context** — if stock moved significantly on earnings, explain what likely drove the reaction based on the data.
 7. **One-paragraph verdict** — balanced assessment of whether the results are incrementally positive, negative, or neutral for the long-term thesis.
-
-*This is educational analysis only, not investment advice.*

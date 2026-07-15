@@ -10,8 +10,6 @@
 | **Recommended System Instruction** | `financial-markets/system-instructions/market-analyst.md` |
 | **Output Format** | Structured Markdown with tables |
 
-> **Disclaimer:** Educational analysis only. Not investment advice.
-
 ---
 
 ## Prompt
@@ -49,5 +47,3 @@ GLD  | SPDR Gold Shares | Commodity | Gold | 5.0% | $185.00
 4. **Alignment check** — does the portfolio's actual risk profile match the stated objective and risk tolerance?
 5. **Observations** — highlight any overlapping holdings (e.g. owning both an S&P 500 ETF and large-cap tech stocks) and fee drag.
 6. **Suggested adjustments** — frame as rebalancing considerations (not buy/sell recommendations), respecting the investor's constraints.
-
-*This is educational analysis only, not investment advice.*

@@ -12,14 +12,14 @@
 </div>
 
 <input type="hidden" id="input-category" name="category" value="{{.ActiveCategory}}" hx-swap-oob="true">
-<input type="hidden" id="input-skill" name="skill" value="{{.ActiveSkill}}" hx-swap-oob="true">
+<input type="hidden" id="input-entry" name="entry" value="{{.ActiveEntry}}" hx-swap-oob="true">
 
 <div id="chat-messages" hx-swap-oob="true">
   <div class="msg assistant">
     <div class="msg-avatar">℞</div>
     <div class="msg-body">
-      <div class="msg-role">{{.ActiveSkill}}</div>
-      <div class="msg-content markdown">Loaded **{{.ActiveSkill}}** from `{{.ActiveCategory}}`. Send a prompt to test this skill's instructions.</div>
+      <div class="msg-role">{{.ActiveLabel}}</div>
+      <div class="msg-content markdown">Loaded **{{.ActiveLabel}}** from `{{.SourcePath}}`. Send a prompt to test this library document's instructions.</div>
     </div>
   </div>
 </div>
